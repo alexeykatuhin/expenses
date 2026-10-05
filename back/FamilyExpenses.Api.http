@@ -1,0 +1,38 @@
+@host = http://localhost:5088
+@accessToken = paste_access_token_here
+
+POST {{host}}/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "StrongPassword123",
+  "display_name": "Family Budget"
+}
+
+###
+
+POST {{host}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "StrongPassword123"
+}
+
+###
+
+POST {{host}}/api/v1/expense-categories
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Groceries",
+  "is_active": true
+}
+
+###
+
+GET {{host}}/api/v1/expenses?limit=50&offset=0
+Authorization: Bearer {{accessToken}}
+Accept: application/json

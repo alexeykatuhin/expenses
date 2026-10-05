@@ -1,0 +1,8 @@
+.git
+.codex
+**/bin
+**/obj
+**/node_modules
+front/dist
+*.log
+*.err.log

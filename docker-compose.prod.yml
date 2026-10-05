@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: family-expenses-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: family_expenses
+      POSTGRES_USER: family_expenses
+      POSTGRES_PASSWORD: family_expenses
+    volumes:
+      - family-expenses-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U family_expenses -d family_expenses"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: back/Dockerfile
+    container_name: family-expenses-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=family_expenses;Username=family_expenses;Password=family_expenses
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: front/Dockerfile
+      args:
+        VITE_API_BASE_URL: /expenses/api/v1
+    container_name: family-expenses-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - /opt/family-expenses/fly:/usr/share/nginx/html/fly:ro
+    depends_on:
+      - api
+
+volumes:
+  family-expenses-postgres-data:
