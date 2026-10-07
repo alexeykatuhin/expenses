@@ -24,8 +24,7 @@ public sealed class ReportService(
             return null;
         }
 
-        (dateFrom, dateTo) = IgnoreDateRangeForPeriod(dateFrom, dateTo, periodId);
-        var rows = operations.GetByUser(userId, dateFrom: dateFrom, dateTo: dateTo, periodId: periodId);
+        var rows = GetReportOperations(userId, dateFrom, dateTo, periodId: periodId);
         var incomeRub = rows.Where(x => x.Kind == EntryKind.Income).Sum(x => x.AmountRub);
         var incomeUsd = rows.Where(x => x.Kind == EntryKind.Income).Sum(x => x.AmountUsd);
         var expenseRub = rows.Where(x => x.Kind == EntryKind.Expense).Sum(x => x.AmountRub);
@@ -50,8 +49,7 @@ public sealed class ReportService(
             return (null, ApiError.Validation([new ErrorDetail("type", "Allowed values are income and expense")]), false);
         }
 
-        (dateFrom, dateTo) = IgnoreDateRangeForPeriod(dateFrom, dateTo, periodId);
-        var rows = operations.GetByUser(userId, kind, dateFrom, dateTo, periodId: periodId)
+        var rows = GetReportOperations(userId, dateFrom, dateTo, kind, periodId)
             .GroupBy(x => bySubcategory ? x.SubcategoryId : x.CategoryId)
             .Select(x => new { Id = x.Key, Rub = x.Sum(y => y.AmountRub), Usd = x.Sum(y => y.AmountUsd) })
             .OrderByDescending(x => x.Rub)
@@ -101,8 +99,27 @@ public sealed class ReportService(
         return (rows, null, false);
     }
 
-    private static (DateOnly? DateFrom, DateOnly? DateTo) IgnoreDateRangeForPeriod(DateOnly? dateFrom, DateOnly? dateTo, long? periodId) =>
-        periodId is null ? (dateFrom, dateTo) : (null, null);
+    private IReadOnlyCollection<Operation> GetReportOperations(
+        long userId,
+        DateOnly? dateFrom,
+        DateOnly? dateTo,
+        EntryKind? kind = null,
+        long? periodId = null)
+    {
+        if (periodId is not null)
+        {
+            return operations.GetByUser(userId, kind, periodId: periodId);
+        }
+
+        var periodIds = periods.GetByUser(userId)
+            .Where(x => IsPeriodInRange(x, dateFrom, dateTo))
+            .Select(x => x.Id)
+            .ToHashSet();
+
+        return operations.GetByUser(userId, kind)
+            .Where(x => x.PeriodId is not null && periodIds.Contains(x.PeriodId.Value))
+            .ToList();
+    }
 
     private static bool IsPeriodInRange(ReportingPeriod period, DateOnly? dateFrom, DateOnly? dateTo) =>
         (dateFrom is null || period.StartDate >= dateFrom) &&
