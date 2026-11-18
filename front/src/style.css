@@ -1362,6 +1362,13 @@ textarea {
   fill: #ef4444;
 }
 
+.savings-chart__average {
+  stroke: #2563eb;
+  stroke-width: 2;
+  stroke-dasharray: 8 5;
+  pointer-events: none;
+}
+
 .savings-chart__amount {
   font-size: 0.68rem;
   font-weight: 800;
@@ -1403,6 +1410,11 @@ textarea {
 
 .savings-chart__legend-dot--negative {
   background: #ef4444;
+}
+
+.savings-chart__legend-line {
+  width: 18px;
+  border-top: 2px dashed #2563eb;
 }
 
 .chart-card__header span {

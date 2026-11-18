@@ -109,10 +109,20 @@
                   <tspan class="line-chart__tick-year" :x="bar.labelX" dy="14">{{ bar.yearLabel }}</tspan>
                 </text>
               </g>
+              <line
+                class="savings-chart__average"
+                :x1="chartBounds.left"
+                :y1="savingsChart.averageY"
+                :x2="chartBounds.right"
+                :y2="savingsChart.averageY"
+              >
+                <title>Среднее накопление за 12 месяцев: {{ formatSignedMoney(savingsChart.average) }} RUB</title>
+              </line>
             </svg>
             <div class="savings-chart__legend" aria-hidden="true">
               <span><i class="savings-chart__legend-dot savings-chart__legend-dot--positive"></i>Положительные накопления</span>
               <span><i class="savings-chart__legend-dot savings-chart__legend-dot--negative"></i>Перерасход</span>
+              <span><i class="savings-chart__legend-line"></i>Среднее: {{ formatSignedMoney(savingsChart.average) }} RUB</span>
             </div>
           </div>
         </article>
@@ -735,11 +745,15 @@ function buildSavingsChart() {
       amountLabelY: period.value >= 0 ? y - 7 : y + height + 15,
     }
   })
+  const total = values.reduce((sum, period) => sum + period.value, 0)
+  const average = total / Math.max(values.length, 1)
 
   return {
     bars,
     yTicks,
-    total: values.reduce((total, period) => total + period.value, 0),
+    total,
+    average,
+    averageY: getSavingsChartY(average, scaleMax),
     hasData: values.some((period) => period.income !== 0 || period.expense !== 0),
   }
 }

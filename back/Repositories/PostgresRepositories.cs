@@ -123,10 +123,13 @@ public sealed class PostgresDatabaseInitializer(NpgsqlDataSource dataSource) : I
             ('JPY', 'Japanese Yen', 0, TRUE),
             ('KHR', 'Riel', 2, TRUE),
             ('KGS', 'Som', 2, TRUE),
+            ('KRW', 'South Korean Won', 0, TRUE),
             ('KZT', 'Tenge', 2, TRUE),
             ('RUB', 'Russian Ruble', 2, TRUE),
+            ('SGD', 'Singapore Dollar', 2, TRUE),
             ('THB', 'Baht', 2, TRUE),
             ('TRY', 'Turkish Lira', 2, TRUE),
+            ('TWD', 'New Taiwan Dollar', 2, TRUE),
             ('USD', 'US Dollar', 2, TRUE),
             ('VND', 'Vietnamese Dong', 0, TRUE),
             ('UZS', 'Uzbekistan Sum', 2, TRUE)

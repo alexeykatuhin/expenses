@@ -26,7 +26,10 @@ public sealed class ExpenseStore
             new KeyValuePair<string, Currency>("GBP", new Currency("GBP", "Pound Sterling", 2, true)),
             new KeyValuePair<string, Currency>("JPY", new Currency("JPY", "Japanese Yen", 0, true)),
             new KeyValuePair<string, Currency>("KHR", new Currency("KHR", "Riel", 2, true)),
+            new KeyValuePair<string, Currency>("KRW", new Currency("KRW", "South Korean Won", 0, true)),
             new KeyValuePair<string, Currency>("RUB", new Currency("RUB", "Russian Ruble", 2, true)),
+            new KeyValuePair<string, Currency>("SGD", new Currency("SGD", "Singapore Dollar", 2, true)),
+            new KeyValuePair<string, Currency>("TWD", new Currency("TWD", "New Taiwan Dollar", 2, true)),
             new KeyValuePair<string, Currency>("USD", new Currency("USD", "US Dollar", 2, true)),
             new KeyValuePair<string, Currency>("VND", new Currency("VND", "Vietnamese Dong", 0, true)),
         });

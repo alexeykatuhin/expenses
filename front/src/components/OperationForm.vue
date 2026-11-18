@@ -32,12 +32,13 @@
             enterkeyhint="done"
             inputmode="decimal"
             min="0"
-            step="0.01"
+            :step="amountInputStep"
             type="number"
             @focus="selectAmount"
           />
-          <small>{{ state.currencyCode || 'RUB' }}</small>
+          <small>{{ amountCurrencyLabel }}</small>
         </div>
+        <small v-if="isVietnameseDong" class="field__hint">Введите сумму в тысячах: 3 = 3000 VND.</small>
         <span v-if="state.fieldErrors.original_amount" class="field__error">
           {{ state.fieldErrors.original_amount }}
         </span>
@@ -218,6 +219,7 @@ const props = defineProps({
 const emit = defineEmits(['saved'])
 const lastCurrencyStorageKey = 'family-expenses:last-operation-currency'
 const lastCategoryStorageKeyPrefix = 'family-expenses:last-operation-category'
+const vietnameseDongInputMultiplier = 1000
 const amountInput = ref(null)
 
 const resources = {
@@ -263,6 +265,9 @@ const state = reactive({
 })
 
 const submitLabel = computed(() => (props.mode === 'edit' ? 'Сохранить' : 'Добавить операцию'))
+const isVietnameseDong = computed(() => state.currencyCode === 'VND')
+const amountCurrencyLabel = computed(() => (isVietnameseDong.value ? 'тыс. VND' : state.currencyCode || 'RUB'))
+const amountInputStep = computed(() => (isVietnameseDong.value ? '0.001' : '0.01'))
 const canCloseActivePeriod = computed(() => Boolean(state.activePeriod) && isPeriodEnded(state.activePeriod))
 const closePeriodTitle = computed(() => {
   if (!state.activePeriod) {
@@ -560,7 +565,7 @@ function buildPayload() {
   return {
     category_id: Number(state.categoryId),
     subcategory_id: state.subcategoryId ? Number(state.subcategoryId) : null,
-    original_amount: formatMoney(state.originalAmount),
+    original_amount: formatMoney(toStoredOriginalAmount(state.originalAmount, state.currencyCode)),
     currency_code: state.currencyCode,
     comment: state.comment || null,
   }
@@ -587,11 +592,13 @@ async function resetForm({ focus = true } = {}) {
 function applyOperation(operation) {
   state.applyingOperation = true
   const operationType = props.fixedType || operation?.type
+  const currencyCode = operation?.currency_code ?? operation?.currencyCode ?? state.currencyCode
+  const originalAmount = operation?.original_amount ?? operation?.originalAmount ?? operation?.amount_rub ?? operation?.amountRub ?? '0'
   state.type = operationType || state.type || 'expense'
   state.categoryId = operation?.category_id ?? operation?.categoryId ?? ''
   state.subcategoryId = operation?.subcategory_id ?? operation?.subcategoryId ?? ''
-  state.originalAmount = operation?.original_amount ?? operation?.originalAmount ?? operation?.amount_rub ?? operation?.amountRub ?? '0'
-  state.currencyCode = operation?.currency_code ?? operation?.currencyCode ?? state.currencyCode
+  state.originalAmount = toDisplayOriginalAmount(originalAmount, currencyCode)
+  state.currencyCode = currencyCode
   state.comment = operation?.comment ?? ''
   state.fieldErrors = {}
   state.applyingOperation = false
@@ -652,6 +659,20 @@ function rememberLastCurrency(currencyCode) {
 function isValidMoney(value) {
   const parsed = Number(value)
   return Number.isFinite(parsed) && parsed >= 0
+}
+
+function toStoredOriginalAmount(value, currencyCode) {
+  const amount = Number(value)
+  return currencyCode === 'VND' ? amount * vietnameseDongInputMultiplier : amount
+}
+
+function toDisplayOriginalAmount(value, currencyCode) {
+  const amount = Number(value)
+  if (!Number.isFinite(amount)) {
+    return value ?? '0'
+  }
+
+  return String(currencyCode === 'VND' ? amount / vietnameseDongInputMultiplier : amount)
 }
 
 function rememberLastCategory(type, categoryId) {

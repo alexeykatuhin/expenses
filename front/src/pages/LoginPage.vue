@@ -51,6 +51,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { useAuthStore } from '../stores/auth'
 import { getErrorMessage, getFieldErrors } from '../utils/apiErrors'
+import { redirectAfterAuth } from '../utils/authRedirect'
 
 const authStore = useAuthStore()
 const route = useRoute()
@@ -79,7 +80,7 @@ async function submit() {
       password: form.password,
     })
 
-    await router.push(typeof route.query.redirect === 'string' ? route.query.redirect : { name: 'home' })
+    await redirectAfterAuth(router, route.query.redirect, { name: 'home' })
   } catch (error) {
     fieldErrors.value = getFieldErrors(error)
     formError.value =
